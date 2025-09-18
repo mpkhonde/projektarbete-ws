@@ -22,17 +22,25 @@ public class CustomerController {
     }
 
     // ================================================================
-    // GET alla
+    // GET – Hämta alla kunder
     // ================================================================
-    @Operation(summary = "Hämta alla kunder", description = "Returnerar en lista på alla kunder i systemet.")
-    @ApiResponses({ @ApiResponse(responseCode = "200", description = "Kunder hämtades") })
+    @Operation(summary = "Hämta alla kunder", description = "Returnerar en lista på alla kunder i systemet. Returnerar 204 No Content om inga kunder finns.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Kunder hämtades"),
+            @ApiResponse(responseCode = "204", description = "Inga kunder i systemet")
+    })
     @GetMapping
-    public List<Customer> getAll() {
-        return service.getAll();
+    public ResponseEntity<List<Customer>> getAll() {
+        List<Customer> customers = service.getAll();
+
+        if (customers.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(customers);
     }
 
     // ================================================================
-    // GET via ID
+    // GET – Hämta kund via ID
     // ================================================================
     @Operation(summary = "Hämta kund via ID", description = "Sök efter en kund baserat på dess unika ID.")
     @ApiResponses({
@@ -47,7 +55,22 @@ public class CustomerController {
     }
 
     // ================================================================
-    // POST
+    // GET – Hämta kund via e-post
+    // ================================================================
+    @Operation(summary = "Hämta kund via e-post", description = "Sök efter en kund baserat på dess e-postadress.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Kund hittades"),
+            @ApiResponse(responseCode = "404", description = "Ingen kund med den e-posten")
+    })
+    @GetMapping("/search")
+    public Customer findByEmail(
+            @Parameter(description = "Kundens e-postadress", example = "test@example.com")
+            @RequestParam String email) {
+        return service.findByEmail(email);
+    }
+
+    // ================================================================
+    // POST – Skapa ny kund
     // ================================================================
     @Operation(summary = "Skapa ny kund", description = "Lägger till en ny kund i systemet.")
     @ApiResponses({
@@ -64,7 +87,7 @@ public class CustomerController {
     }
 
     // ================================================================
-    // PUT
+    // PUT – Uppdatera kund
     // ================================================================
     @Operation(summary = "Uppdatera kund", description = "Ändrar informationen för en befintlig kund.")
     @ApiResponses({
@@ -80,7 +103,7 @@ public class CustomerController {
     }
 
     // ================================================================
-    // DELETE
+    // DELETE – Radera kund via ID
     // ================================================================
     @Operation(summary = "Radera kund", description = "Tar bort en kund baserat på ID.")
     @ApiResponses({
@@ -92,6 +115,19 @@ public class CustomerController {
             @Parameter(description = "Kundens ID som ska raderas", example = "1")
             @PathVariable Long id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ================================================================
+    // DELETE ALL – Radera alla kunder
+    // ================================================================
+    @Operation(summary = "Radera alla kunder", description = "Tar bort samtliga kunder i systemet.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Alla kunder raderades")
+    })
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAll() {
+        service.deleteAll();
         return ResponseEntity.noContent().build();
     }
 }

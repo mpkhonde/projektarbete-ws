@@ -9,7 +9,7 @@ import se.projektarbete.projektarbetews.repository.CustomerRepository;
 import java.util.List;
 
 @Service
-@Transactional // enhetliga transaktioner för skrivoperationer
+@Transactional // säkerställer enhetliga transaktioner för alla skrivoperationer
 public class CustomerService {
 
     private final CustomerRepository repository;
@@ -19,7 +19,7 @@ public class CustomerService {
     }
 
     // ================================================================
-    // READ – alla
+    // READ – hämta alla kunder
     // ================================================================
     @Transactional(readOnly = true)
     public List<Customer> getAll() {
@@ -27,7 +27,7 @@ public class CustomerService {
     }
 
     // ================================================================
-    // READ – via id (404 om saknas)
+    // READ – hämta kund via ID (404 om saknas)
     // ================================================================
     @Transactional(readOnly = true)
     public Customer getById(Long id) {
@@ -36,14 +36,23 @@ public class CustomerService {
     }
 
     // ================================================================
-    // CREATE
+    // READ – hämta kund via e-post (404 om saknas)
+    // ================================================================
+    @Transactional(readOnly = true)
+    public Customer findByEmail(String email) {
+        return repository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer with email " + email + " not found"));
+    }
+
+    // ================================================================
+    // CREATE – spara ny kund
     // ================================================================
     public Customer create(Customer customer) {
         return repository.save(customer);
     }
 
     // ================================================================
-    // UPDATE (404 om saknas)
+    // UPDATE – uppdatera befintlig kund (404 om saknas)
     // ================================================================
     public Customer update(Long id, Customer updated) {
         Customer existing = repository.findById(id)
@@ -56,11 +65,18 @@ public class CustomerService {
     }
 
     // ================================================================
-    // DELETE (404 om saknas)
+    // DELETE – radera kund via ID (404 om saknas)
     // ================================================================
     public void delete(Long id) {
         Customer existing = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer with id " + id + " not found"));
         repository.delete(existing);
+    }
+
+    // ================================================================
+    // DELETE ALL – radera samtliga kunder
+    // ================================================================
+    public void deleteAll() {
+        repository.deleteAll();
     }
 }
